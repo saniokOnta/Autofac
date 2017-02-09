@@ -41,7 +41,7 @@ namespace Autofac.Features.GeneratedFactories
                 activatorData,
                 new SingleRegistrationStyle());
 
-            builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
 
             return rb.InstancePerLifetimeScope();
         }

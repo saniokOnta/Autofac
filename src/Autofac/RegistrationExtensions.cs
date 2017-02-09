@@ -99,7 +99,7 @@ namespace Autofac
 
             rb.SingleInstance();
 
-            builder.RegisterCallback(cr =>
+            rb.SetCallbackContainer(builder.RegisterCallback(cr =>
             {
                 if (!(rb.RegistrationData.Lifetime is RootScopeLifetime) ||
                     rb.RegistrationData.Sharing != InstanceSharing.Shared)
@@ -110,7 +110,7 @@ namespace Autofac
                 activator.DisposeInstance = rb.RegistrationData.Ownership == InstanceOwnership.OwnedByLifetimeScope;
 
                 RegistrationBuilder.RegisterSingleComponent(cr, rb);
-            });
+            }));
 
             return rb;
         }
@@ -128,7 +128,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForType<TImplementer>();
 
-            builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
 
             return rb;
         }
@@ -147,7 +147,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForType(implementationType);
 
-            builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
 
             return rb;
         }
@@ -186,7 +186,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForDelegate(@delegate);
 
-            builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
 
             return rb;
         }
@@ -1405,6 +1405,58 @@ namespace Autofac
 
             var tags = new[] { MatchingScopeLifetimeTags.RequestLifetimeScopeTag }.Concat(lifetimeScopeTags).ToArray();
             return registration.InstancePerMatchingLifetimeScope(tags);
+        }
+
+        /// <summary>
+        /// Share one instance of the component within the context of a single
+        /// web/HTTP/API request. Only available for integration that supports
+        /// per-request dependencies (e.g., MVC, Web API, web forms, etc.).
+        /// </summary>
+        /// <typeparam name="TLimit">Registration limit type.</typeparam>
+        /// <typeparam name="TActivatorData">Activator data type.</typeparam>
+        /// <typeparam name="TStyle">Registration style.</typeparam>
+        /// <param name="registration">The registration to configure.</param>
+        /// <param name="predicate">The predicate to run to determine if the registration should be made.</param>
+        /// <returns>A registration builder allowing further configuration of the component.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown if <paramref name="registration" /> or <paramref name="predicate" /> is <see langword="null" />.
+        /// </exception>
+        /// <exception cref="System.NotSupportedException">
+        /// Thrown if <paramref name="registration" /> has no reference to the original callback
+        /// with which it was associated (e.g., it wasn't made with a standard registration method
+        /// as part of a <see cref="ContainerBuilder"/>).
+        /// </exception>
+        public static IRegistrationBuilder<TLimit, TActivatorData, TStyle>
+            OnlyIf<TLimit, TActivatorData, TStyle>(
+                this IRegistrationBuilder<TLimit, TActivatorData, TStyle> registration, Predicate<IComponentRegistry> predicate)
+        {
+            if (registration == null)
+            {
+                throw new ArgumentNullException(nameof(registration));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var c = registration.GetCallbackContainer();
+            if (c == null)
+            {
+                throw new NotSupportedException(RegistrationExtensionsResources.OnlyIfRequiresCallbackContainer);
+            }
+
+            var original = c.Callback;
+            Action<IComponentRegistry> updated = registry =>
+            {
+                if (predicate(registry))
+                {
+                    original(registry);
+                }
+            };
+
+            c.Callback = updated;
+            return registration;
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Autofac
     /// <see cref="RegistrationExtensions"/>
     public class ContainerBuilder
     {
-        private readonly IList<Action<IComponentRegistry>> _configurationCallbacks = new List<Action<IComponentRegistry>>();
+        private readonly IList<CallbackContainer> _configurationCallbacks = new List<CallbackContainer>();
         private bool _wasBuilt;
 
         /// <summary>
@@ -96,11 +96,13 @@ namespace Autofac
         /// </summary>
         /// <remarks>This is primarily for extending the builder syntax.</remarks>
         /// <param name="configurationCallback">Callback to execute.</param>
-        public virtual void RegisterCallback(Action<IComponentRegistry> configurationCallback)
+        public virtual CallbackContainer RegisterCallback(Action<IComponentRegistry> configurationCallback)
         {
             if (configurationCallback == null) throw new ArgumentNullException(nameof(configurationCallback));
 
-            _configurationCallbacks.Add(configurationCallback);
+            var c = new CallbackContainer(configurationCallback);
+            _configurationCallbacks.Add(c);
+            return c;
         }
 
         /// <summary>
@@ -245,7 +247,7 @@ namespace Autofac
                 RegisterDefaultAdapters(componentRegistry);
 
             foreach (var callback in _configurationCallbacks)
-                callback(componentRegistry);
+                callback.Callback(componentRegistry);
         }
 
         private void RegisterDefaultAdapters(IComponentRegistry componentRegistry)

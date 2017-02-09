@@ -69,8 +69,8 @@ namespace Autofac.Features.LightweightAdapters
                 new LightweightAdapterActivatorData(fromService, (c, p, f) => adapter(c, p, (TFrom)f)),
                 new DynamicRegistrationStyle());
 
-            builder.RegisterCallback(cr => cr.AddRegistrationSource(
-                new LightweightAdapterRegistrationSource(rb.RegistrationData, rb.ActivatorData)));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => cr.AddRegistrationSource(
+                new LightweightAdapterRegistrationSource(rb.RegistrationData, rb.ActivatorData))));
 
             return rb;
         }

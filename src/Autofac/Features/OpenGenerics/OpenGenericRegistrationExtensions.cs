@@ -47,8 +47,8 @@ namespace Autofac.Features.OpenGenerics
                 new ReflectionActivatorData(implementor),
                 new DynamicRegistrationStyle());
 
-            builder.RegisterCallback(cr => cr.AddRegistrationSource(
-                new OpenGenericRegistrationSource(rb.RegistrationData, rb.ActivatorData)));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => cr.AddRegistrationSource(
+                new OpenGenericRegistrationSource(rb.RegistrationData, rb.ActivatorData))));
 
             return rb;
         }
@@ -65,8 +65,8 @@ namespace Autofac.Features.OpenGenerics
                 new OpenGenericDecoratorActivatorData(decoratorType, GetServiceWithKey(decoratedServiceType, fromKey)),
                 new DynamicRegistrationStyle());
 
-            builder.RegisterCallback(cr => cr.AddRegistrationSource(
-                new OpenGenericDecoratorRegistrationSource(rb.RegistrationData, rb.ActivatorData)));
+            rb.SetCallbackContainer(builder.RegisterCallback(cr => cr.AddRegistrationSource(
+                new OpenGenericDecoratorRegistrationSource(rb.RegistrationData, rb.ActivatorData))));
 
             return rb;
         }
