@@ -23,6 +23,30 @@ namespace Autofac.Test
         }
 
         [Fact]
+        public void IfNotRegistered_CanFilterEnumerableServices()
+        {
+            var builder = new ContainerBuilder();
+            builder.RegisterType<ServiceA>().As<IService>();
+            builder.RegisterType<ServiceB>().As<IService>().IfNotRegistered(typeof(IService));
+            builder.RegisterType<ServiceC>().As<IService>();
+            var container = builder.Build();
+            var result = container.Resolve<IEnumerable<IService>>().ToArray();
+            Assert.Equal(2, result.Length);
+            Assert.Contains(result, r => r.GetType() == typeof(ServiceA));
+            Assert.Contains(result, r => r.GetType() == typeof(ServiceC));
+        }
+
+        [Fact]
+        public void IfNotRegistered_CanFilterSingleServices()
+        {
+            var builder = new ContainerBuilder();
+            builder.RegisterType<ServiceA>().As<IService>();
+            builder.RegisterType<ServiceB>().As<IService>().IfNotRegistered(typeof(IService));
+            var container = builder.Build();
+            Assert.IsType<ServiceA>(container.Resolve<IService>());
+        }
+
+        [Fact]
         public void OnlyIf_CanFilterEnumerableServices()
         {
             var builder = new ContainerBuilder();
