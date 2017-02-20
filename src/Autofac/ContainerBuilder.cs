@@ -62,7 +62,7 @@ namespace Autofac
     /// <see cref="RegistrationExtensions"/>
     public class ContainerBuilder
     {
-        private readonly IList<CallbackContainer> _configurationCallbacks = new List<CallbackContainer>();
+        private readonly IList<DeferredCallback> _configurationCallbacks = new List<DeferredCallback>();
         private bool _wasBuilt;
 
         /// <summary>
@@ -96,11 +96,11 @@ namespace Autofac
         /// </summary>
         /// <remarks>This is primarily for extending the builder syntax.</remarks>
         /// <param name="configurationCallback">Callback to execute.</param>
-        public virtual CallbackContainer RegisterCallback(Action<IComponentRegistry> configurationCallback)
+        public virtual DeferredCallback RegisterCallback(Action<IComponentRegistry> configurationCallback)
         {
             if (configurationCallback == null) throw new ArgumentNullException(nameof(configurationCallback));
 
-            var c = new CallbackContainer(configurationCallback);
+            var c = new DeferredCallback(configurationCallback);
             _configurationCallbacks.Add(c);
             return c;
         }

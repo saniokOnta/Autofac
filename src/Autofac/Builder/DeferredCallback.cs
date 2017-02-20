@@ -7,12 +7,12 @@ namespace Autofac.Builder
     /// <summary>
     /// Reference object allowing location and update of a registration callback.
     /// </summary>
-    public class CallbackContainer
+    public class DeferredCallback
     {
         private Action<IComponentRegistry> _callback;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CallbackContainer"/> class.
+        /// Initializes a new instance of the <see cref="DeferredCallback"/> class.
         /// </summary>
         /// <param name="callback">
         /// An <see cref="Action{T}"/> that executes a registration action
@@ -21,7 +21,7 @@ namespace Autofac.Builder
         /// <exception cref="System.ArgumentNullException">
         /// Thrown if <paramref name="callback" /> is <see langword="null" />.
         /// </exception>
-        public CallbackContainer(Action<IComponentRegistry> callback)
+        public DeferredCallback(Action<IComponentRegistry> callback)
         {
             if (callback == null)
             {

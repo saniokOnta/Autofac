@@ -99,7 +99,7 @@ namespace Autofac
 
             rb.SingleInstance();
 
-            rb.SetCallbackContainer(builder.RegisterCallback(cr =>
+            rb.RegistrationData.DeferredCallback = builder.RegisterCallback(cr =>
             {
                 if (!(rb.RegistrationData.Lifetime is RootScopeLifetime) ||
                     rb.RegistrationData.Sharing != InstanceSharing.Shared)
@@ -110,7 +110,7 @@ namespace Autofac
                 activator.DisposeInstance = rb.RegistrationData.Ownership == InstanceOwnership.OwnedByLifetimeScope;
 
                 RegistrationBuilder.RegisterSingleComponent(cr, rb);
-            }));
+            });
 
             return rb;
         }
@@ -128,7 +128,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForType<TImplementer>();
 
-            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
+            rb.RegistrationData.DeferredCallback = builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
 
             return rb;
         }
@@ -147,7 +147,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForType(implementationType);
 
-            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
+            rb.RegistrationData.DeferredCallback = builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
 
             return rb;
         }
@@ -186,7 +186,7 @@ namespace Autofac
 
             var rb = RegistrationBuilder.ForDelegate(@delegate);
 
-            rb.SetCallbackContainer(builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb)));
+            rb.RegistrationData.DeferredCallback = builder.RegisterCallback(cr => RegistrationBuilder.RegisterSingleComponent(cr, rb));
 
             return rb;
         }
@@ -1440,7 +1440,7 @@ namespace Autofac
                 throw new ArgumentNullException(nameof(predicate));
             }
 
-            var c = registration.GetCallbackContainer();
+            var c = registration.RegistrationData.DeferredCallback;
             if (c == null)
             {
                 throw new NotSupportedException(RegistrationExtensionsResources.OnlyIfRequiresCallbackContainer);
